@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
 Facebook Profile Cleaner
 Copyright (c) 2015, Chander Ganesan <chander@otg-nc.com>
@@ -33,8 +33,8 @@ from textwrap import dedent
 import facebook
 import getpass
 import dateutil.parser as dparser
-import datetime
-import tzlocal
+from datetime import *
+from tzlocal import get_localzone
 import requests
 import sys
 import pytz
@@ -87,7 +87,7 @@ class FacebookCleaner(object):
                 self.profile = self._graph.get_object('me')
                 self.id = self.profile['id']
                 self.name = self.profile['name']
-            except facebook.GraphAPIError, e:
+            except facebook.GraphAPIError as e:
                 logger.error(
                     "Failure to access Graph API with token - error: %s", e)
                 logger.error(
@@ -131,7 +131,7 @@ class FacebookCleaner(object):
     def graphLookup(self, *args, **kwargs):
         try:
             return self.graph.get_connections(*args, **kwargs)
-        except facebook.GraphAPIError, e:
+        except facebook.GraphAPIError as e:
             logger.error("Failure to access Graph API: %s", e)
             logger.error(
                 "This might be because your deletes took too long - get a new one and restart this tool?")
@@ -221,7 +221,7 @@ class FacebookCleaner(object):
         hover = ActionChains(driver).move_to_element(elem).click()
         try:
             hover.perform()
-        except Exception, e:
+        except Exception as e:
             if 'HTMLSpanElement' not in str(e):
                 logger.debug("Failed click: %s", e)
 
@@ -230,7 +230,7 @@ class FacebookCleaner(object):
         hover = ActionChains(driver).move_to_element(elem)
         try:
             hover.perform()
-        except Exception, e:
+        except Exception as e:
             if 'HTMLSpanElement' not in str(e):
                 logger.debug("Failed hover: %s", e)
 
@@ -508,7 +508,7 @@ class FacebookCleaner(object):
                         None, delete_xpaths)
                     break
 
-            except Exception, e:
+            except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception('Failed attempt to delete story')
 
@@ -820,7 +820,7 @@ class FacebookCleaner(object):
                         self.nfcount_cycles += 1
                         self.nfcount = 0
                         if self.nfcount_cycles > 10:
-                            print "Exiting - too many failures"
+                            print("Exiting - too many failures")
                             sys.exit(0)
                         continue
                 break
@@ -900,7 +900,7 @@ if __name__ == '__main__':
         if getattr(options, arg, None) is None:
             missing_args.append(arg)
     if missing_args:
-        print "Missing argument(s) for {0}".format(', '.join(missing_args))
+        print ("Missing argument(s) for {0}").format(', '.join(missing_args))
         parser.print_help()
         exit(0)
 
@@ -918,9 +918,9 @@ if __name__ == '__main__':
     for f in ['max_date', 'min_date']:
         if getattr(options, f):
             setattr(options, f, dparser.parse(getattr(options, f)).replace(
-                tzinfo=tzlocal.get_localzone()))
+                tzinfo=get_localzone()))
     fbc = FacebookCleaner(username=options.username, password=options.password)
-    print dedent('''
+    print(dedent('''
         Sometimes the browser page fails to load, and things get stuck!
 
         To fix this, there are a couple things you can do:
@@ -944,12 +944,12 @@ if __name__ == '__main__':
         PROCESS NOW, IF YOU DON'T WANT THAT TO HAPPEN!!!!
 
         DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER
-    ''')
+    '''))
 
-    answer = raw_input(
+    answer = input(
         'This tool could remove portions of, or all of, your facebook account - are you sure you wish to continue (yes/N)? ')
     if answer.lower().strip() != 'yes':
-        print "Please enter 'yes' to run this!"
+        print("Please enter 'yes' to run this!")
         sys.exit(3)
     if options.clean_posts:
         fbc.clean_posts(max_date=options.max_date,
